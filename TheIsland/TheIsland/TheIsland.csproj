@@ -41,6 +41,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="MapData.cs" />
+    <Compile Include="Perlin.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

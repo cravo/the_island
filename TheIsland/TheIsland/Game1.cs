@@ -11,8 +11,8 @@ namespace TheIsland
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        int mapWidth = 4096;
-        int mapHeight = 4096;
+        int mapWidth = 512;
+        int mapHeight = 512;
         Texture2D texture;
         Texture2D whiteTexture;
         Map map;

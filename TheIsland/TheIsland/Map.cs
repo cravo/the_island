@@ -15,6 +15,7 @@ namespace TheIsland
         public bool Generated { get; private set; }
         MapData[,] Data;
         Random Rand = new Random();
+        Perlin Noise;
 
         public Map(int width, int height)
         {
@@ -39,6 +40,7 @@ namespace TheIsland
             Generated = false;
 
             Data = new MapData[Width, Height];
+            Noise = new Perlin();
 
             for(int y = 0; y < Height; ++y)
             {
@@ -64,7 +66,8 @@ namespace TheIsland
 
         private float GenerateHeight(int x, int y)
         {
-            return (float)Rand.NextDouble();
+            float scale = 2.0f;
+            return Noise.OctaveNoise(scale * new Microsoft.Xna.Framework.Vector3((float)x / (float)Width, (float)y / (float)Height, 0), 8);
         }
     }
 }
