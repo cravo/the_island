@@ -11,7 +11,12 @@ namespace TheIsland
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        
+        int mapWidth = 4096;
+        int mapHeight = 4096;
+        Texture2D texture;
+        Texture2D whiteTexture;
+        Map map;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -27,8 +32,24 @@ namespace TheIsland
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            GenerateWhiteTexture();
+
+            texture = null;
+            map = new Map(mapWidth, mapHeight);
+            map.BeginGeneration();
 
             base.Initialize();
+        }
+
+        private void GenerateWhiteTexture()
+        {
+            whiteTexture = new Texture2D(GraphicsDevice, 16, 16);
+            Color[] colData = new Color[whiteTexture.Width * whiteTexture.Height];
+            for (var i = 0; i < colData.Length; ++i)
+            {
+                colData[i] = Color.White;
+            }
+            whiteTexture.SetData<Color>(colData);
         }
 
         /// <summary>
@@ -62,9 +83,43 @@ namespace TheIsland
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            UpdateMapGeneration();
 
             base.Update(gameTime);
+        }
+
+        void UpdateMapGeneration()
+        {
+            if(texture == null && map.Generated)
+            {
+
+                texture = new Texture2D(GraphicsDevice, mapWidth, mapHeight);
+                Color[] colData = new Color[mapWidth * mapHeight];
+
+                for (var y = 0; y < mapHeight; ++y)
+                {
+                    for(var x = 0; x < mapWidth; ++x)
+                    {
+                        var index = x + (mapWidth * y);
+                        var data = map.GetMapDataAt(x, y);
+
+                        colData[index] = new Color(data.Height, data.Height, data.Height);
+                    }
+                }
+
+                texture.SetData<Color>(colData);
+            }
+        }
+
+        void DrawProgressBar(int x, int y, int w, int h)
+        {
+            spriteBatch.Draw(whiteTexture, new Rectangle(x, y, w, h), Color.White);
+            spriteBatch.Draw(whiteTexture, new Rectangle(x + 4, y + 4, w - 8, h - 8), Color.Black);
+
+            float proportionDone = map.GenerationProgress;
+
+            spriteBatch.Draw(whiteTexture, new Rectangle(x + 6, y + 6, (int)(proportionDone * (float)(w - 12)), h - 12), Color.White);
+
         }
 
         /// <summary>
@@ -73,9 +128,21 @@ namespace TheIsland
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
+            if(texture != null)
+            {
+                spriteBatch.Begin();
+                spriteBatch.Draw(texture, new Rectangle(0, 0, GraphicsDevice.Viewport.Height, GraphicsDevice.Viewport.Height), Color.White);
+                spriteBatch.End();
+            }
+            else
+            {
+                spriteBatch.Begin();
+                DrawProgressBar(32, GraphicsDevice.Viewport.Height / 2 - 16, GraphicsDevice.Viewport.Width - 64, 32);
+                spriteBatch.End();
+            }
 
             base.Draw(gameTime);
         }
