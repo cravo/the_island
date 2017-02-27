@@ -108,10 +108,30 @@ namespace TheIsland
             genData.Generated = true;
         }
 
+        private float smootherstep(float edge0, float edge1, float x)
+        {
+            // Scale, and clamp x to 0..1 range
+            x = MathHelper.Clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+            // Evaluate polynomial
+            return x * x * x * (x * (x * 6 - 15) + 10);
+        }
+
         private float GenerateHeight(int x, int y)
         {
             float scale = 2.0f;
-            return Noise.OctaveNoise(scale * new Microsoft.Xna.Framework.Vector3((float)x / (float)Width, (float)y / (float)Height, 0), 8);
+            float height = Noise.OctaveNoise(scale * new Microsoft.Xna.Framework.Vector3((float)x / (float)Width, (float)y / (float)Height, 0), 8);
+
+            float dx = (Width / 2) - x;
+            float dy = (Height / 2) - y;
+
+            float dist = (float)Math.Sqrt(dx * dx + dy * dy);
+
+            //float maxHeight = (dist / (float)(Width/2));
+            float maxHeight = smootherstep(1.0f, 0.0f, dist / (float)(Width / 2));
+
+            height *= maxHeight;
+
+            return height;
         }
     }
 }

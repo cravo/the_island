@@ -98,12 +98,19 @@ namespace TheIsland
 
                 for (var y = 0; y < mapHeight; ++y)
                 {
-                    for(var x = 0; x < mapWidth; ++x)
+                    for (var x = 0; x < mapWidth; ++x)
                     {
                         var index = x + (mapWidth * y);
                         var data = map.GetMapDataAt(x, y);
 
-                        colData[index] = new Color(data.Height, data.Height, data.Height);
+                        if (data.Height <= 0.01f)
+                        {
+                            colData[index] = Color.Blue;
+                        }
+                        else
+                        {
+                            colData[index] = new Color(data.Height, data.Height, data.Height);
+                        }
                     }
                 }
 
