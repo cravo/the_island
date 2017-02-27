@@ -19,7 +19,7 @@ namespace TheIslandTests
         [Timeout(30000)]    // Assumes map generates within 30 seconds, increase if necessary
         public void TestMapGenerateSucceeds()
         {
-            var map = new Map(4096, 4096);
+            var map = new Map(128, 128);
 
             map.BeginGeneration();
 
@@ -36,7 +36,7 @@ namespace TheIslandTests
         [ExpectedException(typeof(System.NullReferenceException))]
         public void TestGetMapDataAtWhenNotGenerated()
         {
-            var map = new Map(4096, 4096);
+            var map = new Map(128, 128);
 
             var data = map.GetMapDataAt(20, 34);
         }
@@ -45,7 +45,9 @@ namespace TheIslandTests
         [Timeout(30000)]
         public void TestGetMapDataAtWhenGenerated()
         {
-            var map = new Map(4096, 4096);
+            int size = 128;
+
+            var map = new Map(size, size);
             map.BeginGeneration();
             while(!map.Generated)
             {
@@ -53,13 +55,13 @@ namespace TheIslandTests
             }
 
             Random rand = new Random();
-            var data = map.GetMapDataAt(rand.Next(4096), rand.Next(4096));
+            var data = map.GetMapDataAt(rand.Next(size), rand.Next(size));
             Assert.AreNotEqual(data, null);
 
             var originData = map.GetMapDataAt(0, 0);
             Assert.AreNotEqual(data, null);
 
-            var limitsData = map.GetMapDataAt(4095, 4095);
+            var limitsData = map.GetMapDataAt(size-1, size-1);
             Assert.AreNotEqual(data, null);
         }
 
@@ -68,7 +70,9 @@ namespace TheIslandTests
         [ExpectedException(typeof(System.IndexOutOfRangeException))]
         public void TestGetMapDataOutOfBoundsNegative()
         {
-            var map = new Map(4096, 4096);
+            int size = 128;
+
+            var map = new Map(size, size);
             map.BeginGeneration();
             while (!map.Generated)
             {
@@ -76,7 +80,7 @@ namespace TheIslandTests
             }
 
             Random rand = new Random();
-            var data = map.GetMapDataAt(-rand.Next(4096), -rand.Next(4096));
+            var data = map.GetMapDataAt(-rand.Next(size), -rand.Next(size));
         }
 
         [TestMethod]
@@ -84,7 +88,9 @@ namespace TheIslandTests
         [ExpectedException(typeof(System.IndexOutOfRangeException))]
         public void TestGetMapDataOutOfBoundsPositive()
         {
-            var map = new Map(4096, 4096);
+            int size = 128;
+
+            var map = new Map(size, size);
             map.BeginGeneration();
             while (!map.Generated)
             {
@@ -92,7 +98,7 @@ namespace TheIslandTests
             }
 
             Random rand = new Random();
-            var data = map.GetMapDataAt(4096 + rand.Next(4096), 4096 + rand.Next(4096));
+            var data = map.GetMapDataAt(size + rand.Next(size), size + rand.Next(size));
         }
 
         [TestMethod]

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,18 @@ namespace TheIsland
         MapData[,] Data;
         Random Rand = new Random();
         Perlin Noise;
+
+        class GenData
+        {
+            public Rectangle Area;
+            public bool Generated;
+
+            public GenData(Rectangle area)
+            {
+                Area = area;
+                Generated = false;
+            }
+        }
 
         public Map(int width, int height)
         {
@@ -42,26 +55,57 @@ namespace TheIsland
             Data = new MapData[Width, Height];
             Noise = new Perlin();
 
-            for(int y = 0; y < Height; ++y)
-            {
-                for(int x = 0; x < Width; ++x )
-                {
-                    UpdateGenerationProgress(x, y);
+            List<GenData> genData = new List<GenData>();
 
+            int cellSize = 8;
+            for(int y = 0; y < Height; y += cellSize)
+            {
+                for(int x = 0; x < Width; x += cellSize)
+                {
+                    genData.Add(new GenData(new Rectangle(x, y, cellSize, cellSize)));
+                }
+            }
+
+            foreach(GenData data in genData)
+            {
+                ThreadPool.QueueUserWorkItem(GenerateRegion, data);
+            }
+
+            int numGenerated = 0;
+            do
+            {
+                numGenerated = 0;
+                foreach (GenData d in genData)
+                {
+                    if (d.Generated)
+                    {
+                        numGenerated++;
+                    }
+                }
+
+                GenerationProgress = (float)numGenerated / (float)genData.Count;
+
+            } while (numGenerated < genData.Count);
+
+            GenerationProgress = 1.0f;
+            Generated = true;
+        }
+
+        private void GenerateRegion(object o)
+        {
+            GenData genData = o as GenData;
+
+            for(int y = genData.Area.Top; y < genData.Area.Bottom;++y)
+            {
+                for(int x = genData.Area.Left; x < genData.Area.Right; ++x)
+                {
                     float height = GenerateHeight(x, y);
 
                     Data[x, y] = new MapData(height);
                 }
             }
 
-            GenerationProgress = 1.0f;
-            Generated = true;
-        }
-
-        private void UpdateGenerationProgress(int x, int y)
-        {
-            int index = x + (y * Width);
-            GenerationProgress = (float)index / (float)(Width * Height);
+            genData.Generated = true;
         }
 
         private float GenerateHeight(int x, int y)
