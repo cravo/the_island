@@ -17,6 +17,7 @@ namespace TheIsland
         MapData[,] Data;
         Random Rand = new Random();
         Perlin Noise;
+        float Radius;
 
         class GenData
         {
@@ -50,6 +51,8 @@ namespace TheIsland
 
         void Generate(object o)
         {
+            Radius = (float)Height / 2.0f;
+
             Generated = false;
 
             Data = new MapData[Width, Height];
@@ -108,6 +111,7 @@ namespace TheIsland
             genData.Generated = true;
         }
 
+        // from https://en.wikipedia.org/wiki/Smoothstep
         private float smootherstep(float edge0, float edge1, float x)
         {
             // Scale, and clamp x to 0..1 range
@@ -127,7 +131,7 @@ namespace TheIsland
             float dist = (float)Math.Sqrt(dx * dx + dy * dy);
 
             //float maxHeight = (dist / (float)(Width/2));
-            float maxHeight = smootherstep(1.0f, 0.0f, dist / (float)(Width / 2));
+            float maxHeight = smootherstep(1.0f, 0.0f, dist / Radius);
 
             height *= maxHeight;
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace TheIsland
 {
@@ -11,11 +12,12 @@ namespace TheIsland
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        int mapWidth = 256;
-        int mapHeight = 256;
+        int mapWidth = 512;
+        int mapHeight = 512;
         Texture2D texture;
         Texture2D whiteTexture;
         Map map;
+        KeyboardState oldKeys;
 
         public Game1()
         {
@@ -37,6 +39,8 @@ namespace TheIsland
             texture = null;
             map = new Map(mapWidth, mapHeight);
             map.BeginGeneration();
+
+            oldKeys = Keyboard.GetState();
 
             base.Initialize();
         }
@@ -83,6 +87,15 @@ namespace TheIsland
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            KeyboardState keys = Keyboard.GetState();
+            if(keys.IsKeyDown(Keys.Space) && !oldKeys.IsKeyDown(Keys.Space))
+            {
+                texture = null;
+                map = new Map(mapWidth, mapHeight);
+                map.BeginGeneration();
+            }
+            oldKeys = keys;
+
             UpdateMapGeneration();
 
             base.Update(gameTime);
@@ -92,6 +105,7 @@ namespace TheIsland
         {
             if(texture == null && map.Generated)
             {
+                Random rand = new Random();
 
                 texture = new Texture2D(GraphicsDevice, mapWidth, mapHeight);
                 Color[] colData = new Color[mapWidth * mapHeight];
@@ -103,14 +117,47 @@ namespace TheIsland
                         var index = x + (mapWidth * y);
                         var data = map.GetMapDataAt(x, y);
 
-                        if (data.Height <= 0.01f)
+                        if (data.Height < 0.001f)
                         {
-                            colData[index] = Color.Blue;
+                            // deep blue water
+                            colData[index] = new Color(24,60,90);
+                        }
+                        else if (data.Height <= 0.01f)
+                        {
+                            // light blue shoreline water
+                            Vector3 c1 = new Color(24, 60, 90).ToVector3();
+                            Vector3 c2 = new Color(129, 211, 206).ToVector3();
+                            float prop = (data.Height - 0.001f) / (0.01f - 0.001f);
+                            colData[index] = new Color(Vector3.Lerp(c1,c2,prop));
+                        }
+                        else if (data.Height < 0.015f)
+                        {
+                            // sand
+                            colData[index] = new Color(216, 214, 196);// new Color(Vector3.Lerp(c1, c2, prop));
+                        }
+                        else if (data.Height < 0.1f)
+                        {
+                            // grass
+                            colData[index] = new Color(68,93,78);
+                        }
+                        else if (data.Height < 0.4f)
+                        {
+                            colData[index] = Color.Gray;
                         }
                         else
                         {
-                            colData[index] = new Color(data.Height, data.Height, data.Height);
+                            colData[index] = Color.White;
                         }
+
+                        if(data.Height > 0.01f)
+                        {
+                            if (data.Height < map.GetMapDataAt(x-1,y-1).Height)
+                            {
+                                colData[index] = new Color(colData[index].ToVector3() * 0.5f);
+                            }
+                        }
+
+                        colData[index] = new Color(colData[index].ToVector3() * (1.0f - 0.2f * (float)rand.NextDouble()));
                     }
                 }
 
